@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -41,6 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColumnMetaInfo.cs" />
+    <Compile Include="DbQueryProvider.cs" />
+    <Compile Include="EntityContext.cs" />
+    <Compile Include="EntitySet.cs" />
     <Compile Include="IEntityExtensions.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="MetaInfo.cs" />

@@ -6,7 +6,11 @@ using xDev.Data;
 
 namespace ConsoleApp
 {
+    // TODO : Define connection strin as in entity framewrok, where provider name means queryprovider, and in connection string there will be real connection string
+    // TODO : Finish ExecuteStoreCommand - test it against database, implement other commands and test them, then provider it self
+    // TODO : Check ObjectContext - continue work, test creating connection and command execution, transaction maybe
     // TODO : Traversing new Expression and get column names for it
+    // TODO : Add to MetaInfo delegate which creates and binds entity properties
     class Program
     {
         static void Main(string[] args)
