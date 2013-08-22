@@ -1,19 +1,60 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace xDev.Data
 {
     /// <summary>
     /// The query provider code in this class implements the four methods that are required to implement the <see cref="T:System.Linq.IQueryProvider"/> interface. 
     /// </summary>
-    public class DbQueryProvider : IQueryProvider
+    public abstract class DbQueryProvider : IQueryProvider
     {
+        #region [ Fields ]
+
+        private EntityContext _context;
+        
+        #endregion
+
+
+        #region [ Constructors ]
+
+        /// <summary>
+        /// Basic constructor.
+        /// </summary>
+        /// <param name="context">Entity context used by the provider.</param>
+        protected DbQueryProvider(EntityContext context)
+        {
+            this._context = context;
+        }
+
+        #endregion
+
+
+        #region [ Abstract Methods ]
+
+        /// <summary>
+        /// Gets the parameter name in form used by the underlying database.
+        /// </summary>
+        /// <param name="counter">Order of the parameter in the query.</param>
+        /// <returns>Returns the name of the parameter.</returns>
+        public abstract string GetDbParameterName(int counter);
+
+        #endregion
+
+
         #region [ Public Methods ]
+
+        /// <summary>
+        /// Gets the parameter name.
+        /// </summary>
+        /// <param name="counter">Order of the parameter in the query.</param>
+        /// <returns>Returns the name of the parameter.</returns>
+        public virtual string GetParameterName(int counter)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "p{0}", counter);
+        }
+
 
         /// <summary>
         /// Constructs an System.Linq.IQueryable object that can evaluate the query represented

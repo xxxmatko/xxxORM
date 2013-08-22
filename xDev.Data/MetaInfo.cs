@@ -31,6 +31,8 @@ namespace xDev.Data
         private readonly ReadOnlyDictionary<string, Delegate> _getters;
         private readonly ReadOnlyDictionary<string, ReadOnlyCollection<ValidationAttribute>> _validationRules;
 
+        private readonly Func<object[], T> _constructor;
+
         #endregion
 
 
@@ -73,6 +75,9 @@ namespace xDev.Data
 
             // Get all validations for the properties
             this._validationRules = GetPropertyValidationRules(properties);
+
+            // Get the constructor delegate
+            this._constructor = GetConstructor(this._properties, this._propertyTypes);
         }
 
         #endregion
@@ -199,6 +204,80 @@ namespace xDev.Data
             }
         }
 
+        #endregion
+
+        
+        #region [ Public Methods ]
+        
+        /// <summary>
+        /// Creates new entity and initializes it with supplied properties.
+        /// </summary>
+        /// <param name="properties">Properties for the initialization.</param>
+        /// <returns>Returns new entity of type <typeparamref name="T"/>.</returns>
+        public T Create(params object[] properties)
+        {
+            if(this._constructor == null)
+            {
+                return null;
+            }
+            
+            if(properties.Length > this._properties.Count)
+            {
+                throw new ArgumentOutOfRangeException("properties", string.Format("Unable to create and initialize entity of type {0}. The number of supplied properties is out of range.", this._entityType.FullName));
+            }
+
+            return this._constructor(properties);
+        }
+
+
+        /// <summary>
+        /// Creates new entity and initializes it with supplied properties.
+        /// </summary>
+        /// <param name="propertyMappings">Properties for the initialization.</param>
+        /// <returns>Returns new entity of type <typeparamref name="T"/>.</returns>
+        public T Create(params Tuple<string, object>[] propertyMappings)
+        {
+            if (this._constructor == null)
+            {
+                return null;
+            }
+
+            if (propertyMappings.Length > this._properties.Count)
+            {
+                throw new ArgumentOutOfRangeException("properties", string.Format("Unable to create and initialize entity of type {0}. The number of supplied properties is out of range.", this._entityType.FullName));
+            }
+
+            // Check for invalid properties
+            Func<Tuple<string, object>, bool> hasInvalidProperty = pm => this._properties.IndexOf(pm.Item1) == -1;
+            if(propertyMappings.Any(hasInvalidProperty))
+            {
+                var invalidProp = propertyMappings.First(hasInvalidProperty);
+                throw new InvalidOperationException(string.Format("Unable to create and initialize entity of type {0}. Supplied properties contains invalid property name '{1}'.", this._entityType.FullName, invalidProp.Item1));
+            }
+
+            // Prepare values
+            var values = new List<object>(this._properties.Count);
+
+            // Loop all properties
+            foreach(string property in this._properties)
+            {
+                // Try to find this property
+                var pMapping = propertyMappings.FirstOrDefault(pm => pm.Item1.Equals(property));
+
+                // If there is not any value for the current property use null instead
+                if(pMapping == null)
+                {
+                    values.Add(null);
+                    continue;
+                }
+
+                // Store the supplied value
+                values.Add(pMapping.Item2);
+            }
+
+            return Create(values.ToArray());
+        }
+        
         #endregion
 
 
@@ -384,7 +463,6 @@ namespace xDev.Data
         }
 
 
-
         /// <summary>
         /// Gets all property getters.
         /// </summary>
@@ -430,6 +508,75 @@ namespace xDev.Data
             }
 
             return new ReadOnlyDictionary<string, ReadOnlyCollection<ValidationAttribute>>(validations);
+        }
+
+
+        /// <summary>
+        /// Creates entity constructor delegate.
+        /// </summary>
+        /// <param name="properties">List of entity's property names.</param>
+        /// <param name="propertyTypes">List of entity's property types.</param>
+        /// <returns>Returns constructor delegate.</returns>
+        private Func<object[], T> GetConstructor(IList<string> properties, IDictionary<string, Type> propertyTypes)
+        {
+            // List of all property assignment bindings
+            var bindings = new List<MemberAssignment>();
+
+            // Expression for the constructor input arguments "params object[] @params"
+            var paramsExpr = Expression.Parameter(typeof(object[]), "@params");
+
+            // Expression for the "null"
+            var nullExpr = Expression.Constant(null);
+
+            // Create binding for each property
+            for(int i = 0; i < properties.Count; i++)
+            {
+                // Get property name and type
+                string pName = properties[i];
+                Type pType = propertyTypes[pName];
+                var pTypeExpr = Expression.Constant(pType, typeof(Type));
+
+                // Expression for accessing constructor input parameter "@params[i]"
+                var paramExpr = Expression.ArrayAccess(paramsExpr, Expression.Constant(i, typeof(int)));
+
+                // Expresion for type changing "Convert.ChangeType(@params[i], int)
+                var changeTypeExpr = Expression.Call(typeof(Convert), "ChangeType", null, paramExpr, pTypeExpr);
+
+                // Expression for converting the input argument "(int)Convert.ChangeType(@params[i], int)
+                var convertParamExpr = Expression.ConvertChecked(changeTypeExpr, pType);
+
+                // Create binding expression "{Id = (@params[i] != null) ? (int)Convert.ChangeType(@params[0], int), default(int)}"
+                var bindingExpr = Expression.Bind(this._entityType.GetProperty(pName), 
+                    Expression.Condition(Expression.NotEqual(paramExpr, nullExpr)
+                        , convertParamExpr
+                        , Expression.Default(pType)));
+
+                // Store the binding expression
+                bindings.Add(bindingExpr);
+            }
+
+            // Create entity init expression
+            var entityInitExpr = Expression.MemberInit(Expression.New(this._entityType), bindings);
+
+            // Create lambda expression for the constructor
+            var constructorExpr = Expression.Lambda<Func<object[], T>>(entityInitExpr, paramsExpr);
+
+            return constructorExpr.Compile();
+        }
+
+        #endregion
+
+
+        #region [ Static Methods ]
+
+        /// <summary>
+        /// Gets the meta information for the entity type.
+        /// </summary>
+        /// <typeparam name="T">Type of the entity.</typeparam>
+        /// <returns>Returns new instance of a <see cref="xDev.Data.MetaInfo{T}"/> class.</returns>
+        public static MetaInfo<T> GetMetaInfo()
+        {
+            return new T().GetMetaInfo();
         }
 
         #endregion
