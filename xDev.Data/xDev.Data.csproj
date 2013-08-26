@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColumnMetaInfo.cs" />
+    <Compile Include="DataReaderService.cs" />
     <Compile Include="DbQueryProvider.cs" />
     <Compile Include="EntityConnection.cs">
       <SubType>Component</SubType>

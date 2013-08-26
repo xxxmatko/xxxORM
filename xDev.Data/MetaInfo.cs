@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
@@ -30,6 +31,7 @@ namespace xDev.Data
         private readonly ReadOnlyDictionary<string, Delegate> _setters;
         private readonly ReadOnlyDictionary<string, Delegate> _getters;
         private readonly ReadOnlyDictionary<string, ReadOnlyCollection<ValidationAttribute>> _validationRules;
+        private readonly ReadOnlyDictionary<string, TypeConverter> _propertyConverters;
 
         private readonly Func<object[], T> _constructor;
 
@@ -75,6 +77,9 @@ namespace xDev.Data
 
             // Get all validations for the properties
             this._validationRules = GetPropertyValidationRules(properties);
+
+            // Get converters for properties
+            this._propertyConverters = GetPropertyConverters(properties);
 
             // Get the constructor delegate
             this._constructor = GetConstructor(this._properties, this._propertyTypes);
@@ -201,6 +206,18 @@ namespace xDev.Data
             get
             {
                 return this._validationRules;
+            }
+        }
+
+
+        /// <summary>
+        /// Get list of all property converters
+        /// </summary>
+        internal ReadOnlyDictionary<string, TypeConverter> PropertyConverters
+        {
+            get
+            {
+                return this._propertyConverters;
             }
         }
 
@@ -493,21 +510,59 @@ namespace xDev.Data
                 }
 
                 // Get all validation attributes
-                var validatioAttrs = propInfo.GetCustomAttributes()
+                var validationAttrs = propInfo.GetCustomAttributes()
                     .OfType<ValidationAttribute>()
                     .ToList();
 
                 // If there are not any validations for the property continue with the next one
-                if(validatioAttrs.Count <= 0)
+                if(validationAttrs.Count <= 0)
                 {
                     continue;
                 }
 
                 // Store validations
-                validations.Add(propInfo.Name, new ReadOnlyCollection<ValidationAttribute>(validatioAttrs));
+                validations.Add(propInfo.Name, new ReadOnlyCollection<ValidationAttribute>(validationAttrs));
             }
 
             return new ReadOnlyDictionary<string, ReadOnlyCollection<ValidationAttribute>>(validations);
+        }
+
+
+        /// <summary>
+        /// Gets all property converters.
+        /// </summary>
+        /// <param name="properties">List of entity's <see cref="T:System.Reflection.PropertyInfo"/> objects.</param>
+        /// <returns>Returns disctionary of <see cref="T:System.ComponentModel.TypeConverter"/> object for each property.</returns>
+        private ReadOnlyDictionary<string, TypeConverter> GetPropertyConverters(IEnumerable<PropertyInfo> properties)
+        {
+            var converters = new Dictionary<string, TypeConverter>(properties.Count());
+
+            foreach (var propInfo in properties)
+            {
+                // Process only registered properties
+                if (this._properties.IndexOf(propInfo.Name) == -1)
+                {
+                    continue;
+                }
+
+                // Get typeconverter attributes
+                var converterAttr = propInfo.GetCustomAttribute<TypeConverterAttribute>();
+                if(converterAttr == null)
+                {
+                    continue;
+                }
+
+                // Get converter type
+                var converterType = Type.GetType(converterAttr.ConverterTypeName, true, true);
+                
+                // Create converter constructor expression
+                var converterCtorExpr = Expression.Lambda<Func<TypeConverter>>(Expression.New(converterType));
+
+                // Store validations
+                converters.Add(propInfo.Name, (TypeConverter)converterCtorExpr.Compile().DynamicInvoke());
+            }
+
+            return new ReadOnlyDictionary<string, TypeConverter>(converters);            
         }
 
 

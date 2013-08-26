@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,6 +16,7 @@ namespace ConsoleApp
         private string _login;
         private string _password;
         private int _departmentId;
+        private string _isLocked;
         private ICollection<Role> _roles;
         private Department _department;
         private ICollection<Department> _departments;
@@ -30,6 +32,7 @@ namespace ConsoleApp
             this._login = null;
             this._password = null;
             this._departmentId = 0;
+            this._isLocked = null;
             this._roles = new List<Role>();
             this._department = null;
             this._departments = new List<Department>();
@@ -111,6 +114,21 @@ namespace ConsoleApp
             set
             {
                 this._departmentId = value;
+            }
+        }
+
+
+        [Column("IS_LOCKED", Order = 0, TypeName = "bit")]
+        [TypeConverter(typeof(BoolToStringConverter))]
+        public string IsLocked    
+        {
+            get
+            {
+                return this._isLocked;
+            }
+            set
+            {
+                this._isLocked = value;
             }
         }
 

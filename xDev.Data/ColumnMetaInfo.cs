@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -219,8 +220,10 @@ namespace xDev.Data
                     return DbType.Int32;
                 case "nvarchar":
                     return DbType.String;
+                case "bit":
+                    return DbType.Boolean;
                 default:
-                    return DbType.String;
+                    throw new NotImplementedException(string.Format("Unable to get DbType. Data type '{0}' is not supported.", dataType));
                 // TODO: Handler all other db data types
             }
         }

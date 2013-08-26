@@ -11,7 +11,6 @@ namespace ConsoleApp
     // TODO : READ ENTITIES FORM DB FOR CUSTOM SELECT AND TYPE AND RETURN IENUMERABLE
     // TODO : Check ObjectContext - continue work, test creating connection and command execution, transaction maybe
     // TODO : Traversing new Expression and get column names for it
-    // TODO : Add to MetaInfo delegate which creates and binds entity properties
     class Program
     {
         static void Main(string[] args)
@@ -22,6 +21,22 @@ namespace ConsoleApp
             //TestValidateUser();
             //TestMetaInfoForUser();
             //TestConstructor();
+            TestReadingData();
+        }
+
+
+        private static void TestReadingData()
+        {
+            Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "Id", "Login", "Password", "DepartmentId", "IsLocked");
+            using (var db = new UserManagementContext())
+            {
+                var users = db.ExecuteStoreQuery<User>("SELECT * FROM USERS");
+                //var users = db.ExecuteStoreQuery<User>("SELECT LOGIN FROM USERS");
+                foreach(var user in users)
+                {
+                    Console.WriteLine("{0}\t{1}\t{2}\t\t{3}\t\t{4}", user.Id, user.Login, user.Password, user.DepartmentId, user.IsLocked);
+                }
+            }
         }
 
 

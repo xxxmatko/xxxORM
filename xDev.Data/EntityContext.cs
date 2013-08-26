@@ -259,7 +259,10 @@ namespace xDev.Data
             List<T> result = null;
             try
             {
-                //result = this.InternalTranslate<TElement>(dbDataReader, entitySetName, mergeOption, true);
+                result = new DataReaderService<T>(dbDataReader)
+                    .GetColumns()
+                    .GetMetaInfo()
+                    .ToList();
             }
             catch
             {
@@ -457,105 +460,6 @@ namespace xDev.Data
 
             return dbCommand;
         }
-
-        #endregion
-
-
-        #region [ Static Methods ]
-
-        ///// <summary>
-        ///// Creates new instance of an <see cref="T:System.Data.Common.DbConnection"/> object which represents connection.
-        ///// </summary>
-        ///// <param name="connectionString">Name of the connection string.</param>
-        ///// <returns>Returns instance of an <see cref="T:System.Data.Common.DbConnection"/> object.</returns>
-        //protected static DbConnection CreateConnection(string connectionString)
-        //{
-        //    if (string.IsNullOrEmpty(connectionString))
-        //    {
-        //        throw new ArgumentNullException("connectionString", "Unable to create connection.");
-        //    }
-
-        //    // Get connection configuration
-        //    var cnf = ConfigurationManager.ConnectionStrings[connectionString];
-
-        //    // Check if it is valid
-        //    if (cnf == null)
-        //    {
-        //        throw new ArgumentException("Unable to create connection. Connection string is missing.", "connectionString");
-        //    }
-
-        //    // Get inner conenction string settings - there is configuration for the underlying datasource
-        //    var storeCnf = ParseConfig(cnf.ConnectionString);
-            
-        //    // Create temporary connection string for the underlying store
-        //    cnf = new ConnectionStringSettings(cnf.Name, storeCnf[EntityContext.ProviderConnectionStringProperty], storeCnf[EntityContext.ProviderNameProperty]);
-
-        //    // Try to create connection
-        //    DbConnection dbConnection = null;
-        //    try
-        //    {
-        //        // Get DbFactory
-        //        var dbFactory = DbProviderFactories.GetFactory(cnf.ProviderName);
-
-        //        // Try to create connection
-        //        dbConnection = dbFactory.CreateConnection();
-
-        //        // Check if the connection was created.
-        //        if (dbConnection == null)
-        //        {
-        //            throw new Exception("Incompatible provider.");
-        //        }
-
-        //        // Store the connection string
-        //        dbConnection.ConnectionString = cnf.ConnectionString;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new InvalidOperationException("Unable to create connection.", ex);
-        //    }
-
-        //    return dbConnection;
-        //}
-
-
-        ///// <summary>
-        ///// Gets the inner configuration for the connection string.
-        ///// </summary>
-        ///// <param name="connectionString">Inner text of the original connection string.</param>
-        ///// <returns>Returns collection of key/value pairs.</returns>
-        //protected static NameValueCollection ParseConfig(string connectionString)
-        //{
-        //    var cnf = new NameValueCollection();
-
-        //    // Hash table of configuration keys
-        //    var cnfKeys = new []
-        //    {
-        //        new Tuple<string, int>(EntityContext.ProviderNameProperty, connectionString.IndexOf(EntityContext.ProviderNameProperty, StringComparison.InvariantCultureIgnoreCase)),
-        //        new Tuple<string, int>(EntityContext.ProviderConnectionStringProperty, connectionString.IndexOf(EntityContext.ProviderConnectionStringProperty, StringComparison.InvariantCultureIgnoreCase))
-        //    };
-
-        //    // Sort by the index of the key
-        //    Array.Sort(cnfKeys, (x,y) => x.Item2 - y.Item2);
-
-        //    // Get config vlue for each key
-        //    for (int i = 0; i < cnfKeys.Length; i++)
-        //    {
-        //        // Get current cnf key
-        //        var cnfKey = cnfKeys[i];
-        //        // Get starting index
-        //        int start = cnfKey.Item2 + cnfKey.Item1.Length;
-        //        // Get ending index, its index of the next key or the length of the configuration
-        //        int end = ((i + 1) < cnfKeys.Length) ? cnfKeys[i + 1].Item2 : connectionString.Length;
-
-        //        // Get the actual config value
-        //        string value = connectionString.Substring(start, end - start);
-
-        //        // Store the configuration string
-        //        cnf.Add(cnfKey.Item1, value.Trim('=', ';', '"', ' '));
-        //    }
-
-        //    return cnf;
-        //}
 
         #endregion
     }
