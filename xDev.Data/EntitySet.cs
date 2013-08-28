@@ -11,7 +11,7 @@ namespace xDev.Data
     /// </summary>
     /// <typeparam name="T">Type of the entity.</typeparam>
     public class EntitySet<T> : IOrderedQueryable<T>
-        where T : class, new()
+        /*where T : class, new()*/
     {
         #region [ Fields ]
 
@@ -26,12 +26,16 @@ namespace xDev.Data
         /// <summary>
         /// Base constructor that is called by the client to create the data source. 
         /// </summary>
-        public EntitySet()
+        /// <param name="provider">Object which implements <see cref="T:System.Linq.IQueryProvider"/> interface.</param>
+        public EntitySet(IQueryProvider provider)
         {
-            throw new NotImplementedException();
-            // TODO : What to do with the default provider implementation ?
-            //this._provider = new TerraServerQueryProvider();
-            //this._expression = Expression.Constant(this);
+            if (provider == null)
+            {
+                throw new ArgumentNullException("provider");
+            }
+
+            this._provider = provider;
+            this._expression = Expression.Constant(this);
         }
 
 
@@ -117,7 +121,7 @@ namespace xDev.Data
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
-        /// <returns>A System.Collections.Generic.IEnumerator<T> that can be used to iterate through the collection.</returns>
+        /// <returns>A System.Collections.Generic.IEnumerator{T} that can be used to iterate through the collection.</returns>
         public IEnumerator<T> GetEnumerator()
         {
             return (this.Provider.Execute<IEnumerable<T>>(Expression)).GetEnumerator();
@@ -127,10 +131,10 @@ namespace xDev.Data
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
-        /// <returns>A System.Collections.Generic.IEnumerator<T> that can be used to iterate through the collection.</returns>
+        /// <returns>A System.Collections.Generic.IEnumerator{T} that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (this.Provider.Execute<System.Collections.IEnumerable>(Expression)).GetEnumerator();
+            return (this.Provider.Execute<IEnumerable>(Expression)).GetEnumerator();
         }
 
         #endregion

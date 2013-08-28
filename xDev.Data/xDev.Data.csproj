@@ -50,12 +50,16 @@
     </Compile>
     <Compile Include="EntityContext.cs" />
     <Compile Include="EntitySet.cs" />
+    <Compile Include="ExpressionService.cs" />
     <Compile Include="IEntityExtensions.cs" />
     <Compile Include="IEntity.cs" />
+    <Compile Include="WhereFinderVisitor.cs" />
     <Compile Include="MetaInfo.cs" />
     <Compile Include="MissingAttributeException.cs" />
+    <Compile Include="NominatorVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlQueryProvider.cs" />
+    <Compile Include="SubtreeEvaluatorVisitor.cs" />
     <Compile Include="TableMetaInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Collections.ObjectModel;
 
 namespace xDev.Data
 {
@@ -120,6 +119,7 @@ namespace xDev.Data
         /// <returns>Returns instance of an <see cref="xDev.Data.DataReaderService{T}"/>.</returns>
         public DataReaderService<T> GetColumns()
         {
+            // TODO : Check if the _columns is initialized than do not it again
             CheckIsClosed();
             
             // Initialize the column list
@@ -141,6 +141,7 @@ namespace xDev.Data
         /// <returns>Returns instance of an <see cref="xDev.Data.DataReaderService{T}"/>.</returns>
         public DataReaderService<T> GetMetaInfo()
         {
+            // TODO : Check if the _metainfo is initialized than do not it again
             CheckIsClosed();
 
             // Get meta info for the entity type

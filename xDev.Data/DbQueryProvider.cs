@@ -40,6 +40,9 @@ namespace xDev.Data
         /// <returns>Returns the name of the parameter.</returns>
         public abstract string GetDbParameterName(int counter);
 
+
+        //public abstract string GetQueryText(Expression expression);
+
         #endregion
 
 
@@ -78,15 +81,14 @@ namespace xDev.Data
 
 
         /// <summary>
-        /// Constructs an System.Linq.IQueryable<T> object that can evaluate the query represented by a specified expression tree.
+        /// Constructs an <see cref="System.Linq.IQueryable{T}"/> object that can evaluate the query represented by a specified expression tree.
         /// </summary>
-        /// <typeparam name="T">The type of the elements of the System.Linq.IQueryable<T> that is returned.</typeparam>
+        /// <typeparam name="T">The type of the elements of the <see cref="System.Linq.IQueryable{T}"/> that is returned.</typeparam>
         /// <param name="expression">An expression tree that represents a LINQ query.</param>
-        /// <returns>An System.Linq.IQueryable<T> that can evaluate the query represented by the specified expression tree.</returns>
+        /// <returns>An <see cref="System.Linq.IQueryable{T}"/> that can evaluate the query represented by the specified expression tree.</returns>
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
-            //return new QueryableTerraServerData<TResult>(this, expression);
-            throw new NotImplementedException();
+            return new EntitySet<T>(this, expression);
         }
                 
 
@@ -98,10 +100,18 @@ namespace xDev.Data
         /// <returns>The value that results from executing the specified query.</returns>
         public T Execute<T>(Expression expression)
         {
-            //bool IsEnumerable = (typeof(TResult).Name == "IEnumerable`1");
+            bool isEnumerable = (typeof(T).Name == "IEnumerable`1");
+            bool isQueryOverDataSource = (expression is MethodCallExpression);
 
-            //return (TResult)TerraServerQueryContext.Execute(expression, IsEnumerable);
+            // Create expression service
+            var exprService = new ExpressionService(expression)
+                .FindWhere()
+                .EvaluateWhere();
+
+
             throw new NotImplementedException();
+            //return (T)this._context.Execute(expression, isEnumerable);
+            //return (TResult)TerraServerQueryContext.Execute(expression, IsEnumerable);
         }
 
 

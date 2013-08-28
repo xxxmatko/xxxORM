@@ -8,8 +8,6 @@ using xDev.Data;
 
 namespace ConsoleApp
 {
-    // TODO : READ ENTITIES FORM DB FOR CUSTOM SELECT AND TYPE AND RETURN IENUMERABLE
-    // TODO : Check ObjectContext - continue work, test creating connection and command execution, transaction maybe
     // TODO : Traversing new Expression and get column names for it
     class Program
     {
@@ -21,7 +19,25 @@ namespace ConsoleApp
             //TestValidateUser();
             //TestMetaInfoForUser();
             //TestConstructor();
-            TestReadingData();
+            //TestReadingData();
+            TestReadingDataUsingQueryProvider();
+        }
+
+        private static void TestReadingDataUsingQueryProvider()
+        {
+            int conditionId = 0;
+            Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", "Id", "Login", "Password", "DepartmentId", "IsLocked");
+            using (var db = new UserManagementContext())
+            {
+                var query = from user in db.Users
+                            where user.Id > conditionId
+                            select user;
+
+                foreach (var user in query)
+                {
+                    Console.WriteLine("{0}\t{1}\t{2}\t\t{3}\t\t{4}", user.Id, user.Login, user.Password, user.DepartmentId, user.IsLocked);
+                }
+            }
         }
 
 
