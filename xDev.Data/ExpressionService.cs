@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-
 namespace xDev.Data
 {
     /// <summary>
@@ -15,6 +14,8 @@ namespace xDev.Data
         private readonly Expression _expression;
         private Type _elementType;
         private Expression _whereExpr;
+        private Expression _selectExpr;
+        private IList<MemberExpression> _selectMembers;
 
         #endregion
 
@@ -35,6 +36,8 @@ namespace xDev.Data
             this._expression = expression;
             this._elementType = null;
             this._whereExpr = null;
+            this._selectExpr = null;
+            this._selectMembers = null;
         }
 
         #endregion
@@ -70,6 +73,38 @@ namespace xDev.Data
                     FindWhere();
                 }
                 return this._whereExpr;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the select expression.
+        /// </summary>
+        public Expression SelectExpr
+        {
+            get
+            {
+                if (this._selectExpr == null)
+                {
+                    FindSelect();
+                }
+                return this._selectExpr;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the member access expressions for the select statement.
+        /// </summary>
+        public IList<MemberExpression> SelectMembers
+        {
+            get
+            {
+                if(this._selectMembers == null)
+                {
+                    FindSelectMembers();
+                }
+                return this._selectMembers;
             }
         }
 
@@ -109,8 +144,26 @@ namespace xDev.Data
             }
 
             // Find where expression
-            this._whereExpr = new WhereFinderVisitor(this._expression).FindWhere().GetWhereOperand();
+            this._whereExpr = new WhereFinderVisitor(this._expression).FindWhere().GetOperand();
             
+            return this;
+        }
+
+
+        /// <summary>
+        /// Seeks out the expression that represents the innermost call to Select in the expression tree that represents the client query.
+        /// </summary>
+        /// <returns>Returns instance of an <see cref="T:xDev.Data.ExpressionService"/> object.</returns>
+        public ExpressionService FindSelect()
+        {
+            if (this._selectExpr != null)
+            {
+                return this;
+            }
+
+            // Find select expression
+            this._selectExpr = new SelectFinderVisitor(this._expression).FindSelect().GetOperand();
+
             return this;
         }
 
@@ -118,7 +171,7 @@ namespace xDev.Data
         /// <summary> 
         /// Performs evaluation & replacement of independent sub-trees.
         /// </summary> 
-        /// <returns>A new tree with sub-trees evaluated and replaced.</returns> 
+        /// <returns>Returns instance of an <see cref="T:xDev.Data.ExpressionService"/> object.</returns>
         public ExpressionService EvaluateWhere()
         {
             var whereExpr = this.WhereExpr;
@@ -134,6 +187,30 @@ namespace xDev.Data
                 .Nominate(expr => expr.NodeType != ExpressionType.Parameter)
                 .Evaluate()
                 .EvaluatedExpr;
+
+            return this;
+        }
+
+
+        /// <summary>
+        /// Perfomrs search for the MemberAccess expressions in the select statement.
+        /// </summary>
+        /// <returns>Returns instance of an <see cref="T:xDev.Data.ExpressionService"/> object.</returns>
+        public ExpressionService FindSelectMembers()
+        {
+            var selectExpr = this.SelectExpr;
+
+            // If there is not any select expression than creates the default one
+            if(selectExpr == null)
+            {
+                // TODO : Create default array of all members for the entity type
+                return this;    
+            }
+
+            // Find all member access expressions in the select expression
+            this._selectMembers = new MemberAccessFinderVisitor(selectExpr)
+                .Evaluate()
+                .Members;
 
             return this;
         }

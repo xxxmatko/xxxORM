@@ -53,6 +53,8 @@
     <Compile Include="ExpressionService.cs" />
     <Compile Include="IEntityExtensions.cs" />
     <Compile Include="IEntity.cs" />
+    <Compile Include="MemberAccessFinderVisitor.cs" />
+    <Compile Include="SelectFinderVisitor.cs" />
     <Compile Include="WhereFinderVisitor.cs" />
     <Compile Include="MetaInfo.cs" />
     <Compile Include="MissingAttributeException.cs" />

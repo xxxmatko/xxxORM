@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-
 namespace xDev.Data
 {
     /// <summary>
-    /// Visitor that finds the innermost Where method call expression.
+    /// Visitor that finds the innermost Select method call expression.
     /// </summary>
-    internal sealed class WhereFinderVisitor : ExpressionVisitor
+    internal sealed class SelectFinderVisitor : ExpressionVisitor
     {
         #region [ Fields ]
 
         private readonly Expression _expression;
-        private MethodCallExpression _where;
+        private MethodCallExpression _select;
 
         #endregion
 
@@ -22,16 +21,16 @@ namespace xDev.Data
         /// <summary>
         /// Basic constructor.
         /// </summary>
-        /// <param name="expression">Original expression which contains Where expression.</param>
-        public WhereFinderVisitor(Expression expression)
+        /// <param name="expression">Original expression which contains Select expression.</param>
+        public SelectFinderVisitor(Expression expression)
         {
-            if(expression == null)
+            if (expression == null)
             {
                 throw new ArgumentNullException("expression");
             }
 
             this._expression = expression;
-            this._where = null;
+            this._select = null;
         }
 
         #endregion
@@ -40,13 +39,13 @@ namespace xDev.Data
         #region [ Properties ]
 
         /// <summary>
-        /// Gets where expression.
+        /// Gets select expression.
         /// </summary>
-        public MethodCallExpression Where
+        public MethodCallExpression Select
         {
             get
             {
-                return this._where;
+                return this._select;
             }
         }
 
@@ -56,12 +55,12 @@ namespace xDev.Data
         #region [ Public Methods ]
 
         /// <summary>
-        /// Seeks out the expression that represents the innermost call to Where in the expression tree that represents the client query.
+        /// Seeks out the expression that represents the innermost call to Select in the expression tree that represents the client query.
         /// </summary>
         /// <returns>Returns expression that represents the innermost call to Where.</returns>
-        public WhereFinderVisitor FindWhere()
+        public SelectFinderVisitor FindSelect()
         {
-            if(this._where != null)
+            if (this._select != null)
             {
                 return this;
             }
@@ -72,17 +71,17 @@ namespace xDev.Data
 
 
         /// <summary>
-        /// Gets the operand of Where method call.
+        /// Gets the operand of Select method call.
         /// </summary>
-        /// <returns>Returns LambdaExpression which represents operand of Where method call.</returns>
+        /// <returns>Returns LambdaExpression which represents operand of Select method call.</returns>
         public LambdaExpression GetOperand()
         {
-            if(this._where == null)
+            if (this._select == null)
             {
                 return null;
             }
 
-            return (LambdaExpression)((UnaryExpression)(this._where.Arguments[1])).Operand;
+            return (LambdaExpression)((UnaryExpression)(this._select.Arguments[1])).Operand;
         }
 
         #endregion
@@ -97,9 +96,9 @@ namespace xDev.Data
         /// <returns>The modified expression, if it or any subexpression was modified; otherwise, returns the original expression.</returns>
         protected override Expression VisitMethodCall(MethodCallExpression expression)
         {
-            if (expression.Method.Name == "Where")
+            if (expression.Method.Name == "Select")
             {
-                this._where = expression;
+                this._select = expression;
             }
 
             Visit(expression.Arguments[0]);
@@ -110,3 +109,4 @@ namespace xDev.Data
         #endregion
     }
 }
+

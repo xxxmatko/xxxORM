@@ -119,7 +119,11 @@ namespace xDev.Data
         /// <returns>Returns instance of an <see cref="xDev.Data.DataReaderService{T}"/>.</returns>
         public DataReaderService<T> GetColumns()
         {
-            // TODO : Check if the _columns is initialized than do not it again
+            if (this._columns != null)
+            {
+                return this;
+            }
+
             CheckIsClosed();
             
             // Initialize the column list
@@ -141,7 +145,11 @@ namespace xDev.Data
         /// <returns>Returns instance of an <see cref="xDev.Data.DataReaderService{T}"/>.</returns>
         public DataReaderService<T> GetMetaInfo()
         {
-            // TODO : Check if the _metainfo is initialized than do not it again
+            if(this._metaInfo != null)
+            {
+                return this;
+            }
+            
             CheckIsClosed();
 
             // Get meta info for the entity type

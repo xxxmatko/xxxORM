@@ -105,9 +105,11 @@ namespace xDev.Data
 
             // Create expression service
             var exprService = new ExpressionService(expression)
+                .FindSelect()
+                .FindSelectMembers()
                 .FindWhere()
                 .EvaluateWhere();
-
+            
 
             throw new NotImplementedException();
             //return (T)this._context.Execute(expression, isEnumerable);
